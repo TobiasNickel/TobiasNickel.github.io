@@ -1,0 +1,9 @@
+
+  *{margin:0px;padding:0px;}
+  .app {
+    max-width: 640px;
+    border:1px black solid;
+  }
+  .dDataTable{
+    border:2px black solid;
+  }
