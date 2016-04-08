@@ -1,249 +1,20 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = {
-    appName: 'dData',
-    data: {},
-    section: 'lists',
-    sections: {
-        lists: {
-            currentListName: 'none',
-            currentList: [],
-            new: false
-        }
-    }
-};
-module.exports.sections.lists.currentList = module.exports.data.Contacts;
+var appData=module.exports={appName:"dData",data:{_meta:{schemas:{}}},section:"lists",sections:{lists:{currentListName:"none",currentList:[],newValues:{},"new":!1},definitions:{selected:null},store:{saveName:"data.json"}},userLanguage:"en",languages:{en:{load:"load",save:"save",lists:"lists",forms:"forms",definitions:"definitions","new":"new",back:"back",properties:"properties","add property":"add property",name:"name"},de:{load:"laden",save:"speichern",lists:"Listen",forms:"Formulare",definitions:"Definitionen","new":"neu",back:"zurück",properties:"Eigenschaften","add property":"neue Eigenschaft",name:"Name"},zh:{load:"laden",save:"speichern",lists:"Listen",forms:"Formulare",definitions:"Definitionen","new":"neu",back:"zurück",properties:"Eigenschaften","add property":"neue Eigenschaft",name:"Name"}},t:function(e){return appData.languages[appData.userLanguage][e]||e}},language=navigator.language.substr(0,2).toLowerCase();appData.languages[language]&&(appData.userLanguage=language),module.exports.sections.lists.currentList=module.exports.data.Contacts;
 
 },{}],2:[function(require,module,exports){
-var appData = require('../appData');
-var app = require('../main');
-
-module.exports.set = function (node) {
-    node.style.cursor = "pointer";
-    node.addEventListener('click', function () {
-        console.log('click');
-        var prop = node.getAttribute('prop');
-        set(prop, node.getAttribute('value'));
-        app.rerender();
-    });
-};
-
-function set(path, value) {
-    var orgPath = path;
-    path = path.split('.');
-    var obj = { it: appData };
-    var prop;
-    while (prop = path.shift()) {
-        if (path.length == 0) {
-            obj[prop] = value;
-            return;
-        } else {
-            obj = obj[prop];
-        }
-    }
-    throw 'can not set: ' + orgPath;
-};
-
-module.exports.loadFile = function (node) {
-    node.style.cursor = "pointer";
-    var input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'json');
-    input.hidden = true;
-    node.appendChild(input);
-
-    node.addEventListener('click', function () {
-        input.click();
-    });
-
-    input.addEventListener('change', function () {
-        var reader = new FileReader();
-        reader.readAsText(input.files[0]);
-        reader.onload = function () {
-            appData.data = JSON.parse(reader.result);
-            ensureMeta(appData.data);
-            console.log(appData.data);
-            app.rerender();
-        };
-    });
-};
-
-function ensureMeta(data) {
-    if (!data._meta) data._meta = { schemas: {} };
-    var meta = data._meta;
-    for (var i in data) {
-        if (i !== '_meta') {
-            if (Array.isArray(data[i])) {
-                if (!meta.schemas[i]) {
-                    meta.schemas[i] = createListsDefaultSchema(data[i]);
-                }
-            }
-        }
-    }
-}
-
-function createListsDefaultSchema(list) {
-    var meta = { fields: {} };
-    if (list.length) {
-        for (var i in list[0]) {
-            if (!meta.fields[i]) {
-                meta.fields[i] = typeof list[0][i];
-            }
-        }
-    }
-    return meta;
-}
-
-module.exports.createList = function (node) {
-    node.addEventListener('click', function () {
-        var name = prompt('name:');
-        if (name) {
-            if (!appData.data[name]) {
-                appData.data[name] = [];
-                app.rerender();
-            } else {
-                alert('already exist');
-            }
-        }
-    });
-};
+function set(e,t){var a=e;e=e.split(".");for(var r,n={it:appData};r=e.shift();){if(0==e.length)return void(n[r]=t);n=n[r]}throw"can not set: "+a}function ensureMeta(e){e._meta||(e._meta={schemas:{}});var t=e._meta;for(var a in e)"_meta"!==a&&Array.isArray(e[a])&&(t.schemas[a]||(t.schemas[a]=createListsDefaultSchema(e[a])))}function createListsDefaultSchema(e){var t={fields:{}};if(e.length)for(var a in e[0])t.fields[a]||(t.fields[a]={type:typeof e[0][a]});return t}var appData=require("../appData"),app=require("../main");module.exports.set=function(e){e.style.cursor="pointer",e.addEventListener("click",function(){console.log("click");var t=e.getAttribute("prop");set(t,e.getAttribute("value")),app.rerender()})},module.exports.unset=function(e){e.style.cursor="pointer",e.addEventListener("click",function(){var t=e.getAttribute("prop");set(t,void 0),app.rerender()})},module.exports.dataBind=function(e){e.tagName.toLowerCase();e.addEventListener("change",function(){var t=e.value,a=e.getAttribute("prop");set(a,t),app.rerender()})},module.exports.loadFile=function(e){e.style.cursor="pointer";var t=document.createElement("input");t.setAttribute("type","file"),t.setAttribute("accept","json"),t.hidden=!0,e.appendChild(t),e.addEventListener("click",function(){t.click()}),t.addEventListener("change",function(){var e=new FileReader,a=t.files[0];e.readAsText(a),e.onload=function(){appData.data=JSON.parse(e.result),ensureMeta(appData.data),appData.sections.store.saveName=a.name,console.log(appData.data),app.rerender()}})},module.exports.createList=function(e){e.addEventListener("click",function(){var e=prompt("name:");e&&(appData.data[e]?alert("already exist"):(appData.data[e]=[],appData.data._meta.schemas[e]={fields:{}},app.rerender()))})},module.exports.addNewItem=function(e){e.addEventListener("click",function(){var e=appData.sections.lists.newValues,t=appData.data._meta.schemas[appData.sections.lists.currentListName];for(var a in t){var r=t[a];"number"==r.type?e[a]=parseFloat(e[a]):"boolean"==r.type&&(e[a]="on"==e[a])}appData.sections.lists.newValues={},appData.data[appData.sections.lists.currentListName].push(e),app.rerender()})},module.exports.removeSchemaField=function(e){e.addEventListener("click",function(){var t=e.getAttribute("name");delete appData.data._meta.schemas[appData.sections.definitions.selected].fields[t],app.rerender()})},module.exports.addNewSchemaField=function(e){e.addEventListener("click",function(){var e=prompt("get a name for the new property:");e&&(appData.data._meta.schemas[appData.sections.definitions.selected].fields[e]={type:"string"},app.rerender())})};
 
 },{"../appData":1,"../main":3}],3:[function(require,module,exports){
-//var $ = require('jquery');
-var TreeAct = require("treeact");
-var TemplateManager = require('templatemanager');
-var templates = require('./templates');
-var _ = require('underscore');
-var components = require('./components/mainComponents');
-require('./style.less');
-var appData = require('./appData');
+function rerender(){var e=tM.render("main",appData);treeAct.render(e)}var TreeAct=require("treeact"),TemplateManager=require("templatemanager"),templates=require("./templates"),_=require("underscore"),components=require("./components/mainComponents");require("./style.less");var appData=require("./appData"),TDispatcher=require("tdispatcher");window._=_,appData.currentList=appData.data.contacts;var tM=new TemplateManager("underscore");tM.templates=templates,tM.fileExtension="html",tM.nameOfTemplatemanager="tM";var treeAct=new TreeAct(document.body);treeAct.components=components,rerender(),module.exports.rerender=rerender,module.exports.appData=appData,module.exports.dispatcher=new TDispatcher,window.rerender=rerender,window.appData=appData,window.app=module.exports;
+},{"./appData":1,"./components/mainComponents":2,"./style.less":4,"./templates":5,"tdispatcher":9,"templatemanager":10,"treeact":11,"underscore":12}],4:[function(require,module,exports){
+var css="* {\n  margin: 0px;\n  padding: 0px;\n}\nbody {\n  background-color: #ddd;\n}\n.app {\n  max-width: 640px;\n  width: 100%;\n  padding: 0 0px;\n  font-family: monospace;\n  font-size: 16px;\n  position: relative;\n  bottom: 0px;\n  top: 0px;\n  margin: auto;\n  height: 100%;\n}\n.app .navigation {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  right: 0px;\n  padding: 5px;\n  background-color: #fff;\n  text-align: center;\n}\n.app .navigation li {\n  display: inline;\n  padding: 0px 5px;\n  border-left: 1px #666 solid;\n  text-align: center;\n}\n.app .navigation li.selected {\n  font-weight: bold;\n}\n.app .navigation li:first-child {\n  border-left: 0px;\n}\n.listSelect {\n  background-color: white;\n  margin-bottom: 10px;\n  height: 28px;\n  padding-top: 8px;\n  overflow-y: scroll;\n}\n.listSelect li {\n  display: table-cell;\n  padding: 0 20px;\n}\n.listSelect li.selected {\n  font-weight: bold;\n}\n.listsPage .addNew {\n  background-color: white;\n  margin: 5px;\n  padding: 5px;\n}\n.listsPage .addNew label {\n  width: 120px;\n  display: inline-block;\n  overflow: hidden;\n}\n.table li {\n  margin: 0px 8px;\n  padding: 5px 5px;\n  height: 20px;\n  overflow: hidden;\n  background-color: white;\n  transition: 0.3s linear height;\n  line-height: 24px;\n}\n.table li .prop {\n  display: block;\n  padding-left: 13px;\n}\n.table li .prop .propName {\n  display: none;\n  color: #636363;\n  padding-right: 4px;\n}\n.table li .prop:first-child {\n  padding-left: 3px;\n}\n.table li:hover {\n  height: initial;\n}\n.table li:hover .propName {\n  display: inline;\n}\n.table li:nth-child(ODD) {\n  background-color: #F9F9F9;\n}\n.storePage {\n  text-align: center;\n  font-size: 30px;\n}\n.storePage * {\n  color: black;\n  padding: 60px;\n  text-decoration: none;\n}\n.storePage input {\n  padding: 4px;\n  font-size: 20px;\n}\n.definitionsPage .back {\n  margin-top: 30px;\n}\n.definitionsPage ul {\n  padding: 5px 5px;\n}\n.definitionsPage ul li {\n  position: relative;\n  background-color: white;\n  min-height: 24px;\n  padding-top: 8px;\n}\n.definitionsPage ul li:nth-child(ODD) {\n  background-color: #F9F9F9;\n}\n.definitionsPage ul li label {\n  padding: 0px 17px;\n}\n.definitionsPage ul li button {\n  position: absolute;\n  right: 8px;\n}\n.definitionsPage ul li select {\n  position: absolute;\n  right: 80px;\n}\nbutton {\n  background-color: white;\n  box-shadow: 1px 1px 2px black;\n  border-width: 0px;\n  padding: 2px 10px;\n  margin: 3px;\n}\nbutton:active {\n  margin: 4px 4px;\n  box-shadow: none;\n}\ninput {\n  background-color: white;\n  border: 1px solid lightgray;\n}\nselect {\n  background-color: white;\n}\nul {\n  list-style-type: none;\n}\n.page {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  right: 0px;\n  bottom: 30px;\n  overflow: scroll;\n}\n";require("lessify")(css),module.exports=css;
 
-window._ = _;
-
-appData.currentList = appData.data.contacts;
-
-var tM = new TemplateManager('underscore');
-tM.templates = templates;
-tM.fileExtension = 'html';
-tM.nameOfTemplatemanager = "tM";
-
-var treeAct = new TreeAct(document.body);
-treeAct.components = components;
-
-function rerender() {
-  var xml = tM.render('main', appData);
-  treeAct.render(xml);
-}
-rerender();
-
-module.exports.rerender = rerender;
-module.exports.appData = appData;
-
-window.rerender = rerender;
-window.appData = appData;
-
-},{"./appData":1,"./components/mainComponents":2,"./style.less":4,"./templates":5,"templatemanager":8,"treeact":9,"underscore":10}],4:[function(require,module,exports){
-var css = "* {\n  margin: 0px;\n  padding: 0px;\n}\nbody {\n  background-color: #ddd;\n}\n.app {\n  max-width: 640px;\n  width: 100%;\n  padding: 0 0px;\n  font-family: monospace;\n  font-size: 16px;\n  position: relative;\n  bottom: 0px;\n  top: 0px;\n  margin: auto;\n  height: 100%;\n}\n.app .navigation {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  right: 0px;\n  padding: 5px;\n  background-color: #fff;\n  text-align: center;\n}\n.app .navigation li {\n  display: inline;\n  padding: 0px 5px;\n  border-left: 1px #666 solid;\n  text-align: center;\n}\n.app .navigation li.selected {\n  font-weight: bold;\n}\n.app .navigation li:first-child {\n  border-left: 0px;\n}\n.listSelect {\n  background-color: white;\n  margin-bottom: 10px;\n  height: 28px;\n  padding-top: 8px;\n  overflow-y: scroll;\n}\n.listSelect li {\n  display: inline;\n  margin-left: 20px;\n}\n.listSelect li.selected {\n  font-weight: bold;\n}\n.table li {\n  margin: 0px 8px;\n  padding: 5px 5px;\n  height: 20px;\n  overflow: hidden;\n  background-color: white;\n  transition: 0.3s linear height;\n  line-height: 24px;\n}\n.table li .prop {\n  display: block;\n  padding-left: 13px;\n}\n.table li .prop .propName {\n  display: none;\n  color: #636363;\n  padding-right: 4px;\n}\n.table li .prop:first-child {\n  padding-left: 3px;\n}\n.table li:hover {\n  height: initial;\n}\n.table li:hover .propName {\n  display: inline;\n}\n.table li:nth-child(ODD) {\n  background-color: #F9F9F9;\n}\n.storePage {\n  text-align: center;\n  font-size: 30px;\n}\n.storePage * {\n  color: black;\n  padding: 60px;\n  text-decoration: none;\n}\n";(require('lessify'))(css); module.exports = css;
-},{"lessify":7}],5:[function(require,module,exports){
-module.exports = { "definitions": { template: function (it) {
-      var __t,
-          __p = '',
-          __j = Array.prototype.join,
-          print = function () {
-        __p += __j.call(arguments, '');
-      };
-      __p += '<div class="definitionsPage">definitions</div>';
-      return __p;
-    } },
-  "forms": { template: function (it) {
-      var __t,
-          __p = '',
-          __j = Array.prototype.join,
-          print = function () {
-        __p += __j.call(arguments, '');
-      };
-      __p += '<div class="formsPage">';
-      if (!it.data._meta.forms || !it.data._meta.forms.length) {
-        __p += '\n    there is currently no form defined\n';
-      }
-      __p += '</div>';
-      return __p;
-    } },
-  "lists": { template: function (it) {
-      var __t,
-          __p = '',
-          __j = Array.prototype.join,
-          print = function () {
-        __p += __j.call(arguments, '');
-      };
-      __p += '<div class="listsPage">\n    ';
-
-      var currentListName = it.sections.lists.currentListName;
-      var lists = Object.keys(it.data);
-      lists = lists.filter(function (name) {
-        return Array.isArray(it.data[name]);
-      });
-      var list = it.data[currentListName];
-      var fields = [];
-      if (list && list[0]) {
-        fields = Object.keys(list[0]);
-      }
-
-      __p += '\n    \n    <ul class="listSelect">\n        ';
-      lists.forEach(function (name) {
-        __p += '\n            <li class="item ' + ((__t = currentListName == name ? 'selected ' : '') == null ? '' : __t) + '" component="set" prop="it.sections.lists.currentListName" value="' + ((__t = name) == null ? '' : __t) + '">' + ((__t = name) == null ? '' : __t) + '</li>\n        ';
-      });
-      __p += '\n        <li class="item" component="createList">new</li>\n    </ul>\n    \n    ';
-      if (list && list.length) {
-        __p += '\n        <ul class="table">\n        ';
-        list.forEach(function (row) {
-          __p += '\n            <li>';
-          fields.forEach(function (field) {
-            __p += '<div class="prop"><span class="propName">' + ((__t = field) == null ? '' : _.escape(__t)) + ': </span><span class="value">' + ((__t = row[field]) == null ? '' : _.escape(__t)) + '</span></div>';
-          });
-          __p += '</li>\n        ';
-        });
-        __p += '\n        </ul>\n    ';
-      }
-      __p += '\n    \n</div>';
-      return __p;
-    } },
-  "main": { template: function (it) {
-      var __t,
-          __p = '',
-          __j = Array.prototype.join,
-          print = function () {
-        __p += __j.call(arguments, '');
-      };
-      __p += '<div class="app">\n    \n    ';
-      switch (it.section) {
-        case 'lists':
-          __p += '' + ((__t = it.tM.render('./lists', it)) == null ? '' : __t) + '';
-          break;
-        case 'forms':
-          __p += '' + ((__t = it.tM.render('./forms', it)) == null ? '' : __t) + '';
-          break;
-        case 'definitions':
-          __p += '' + ((__t = it.tM.render('./definitions', it)) == null ? '' : __t) + '';
-          break;
-        case 'store':
-          __p += '' + ((__t = it.tM.render('./store', it)) == null ? '' : __t) + '';
-          break;
-      }
-      __p += '\n    \n    <ul class="navigation">\n        <li class="item ' + ((__t = it.section == 'lists' ? 'selected ' : '') == null ? '' : __t) + '" component="set" prop="it.section" value="lists">Lists</li>\n        <li class="item ' + ((__t = it.section == 'forms' ? 'selected ' : '') == null ? '' : __t) + '" component="set" prop="it.section" value="forms">Forms</li>\n        <li class="item ' + ((__t = it.section == 'definitions' ? 'selected ' : '') == null ? '' : __t) + '" component="set" prop="it.section" value="definitions">Definitions</li>\n        <li class="item ' + ((__t = it.section == 'store' ? 'selected ' : '') == null ? '' : __t) + '" component="set" prop="it.section" value="store">Load / Save</li>\n    </ul>\n</div>\n';
-      return __p;
-    } },
-  "store": { template: function (it) {
-      var __t,
-          __p = '',
-          __j = Array.prototype.join,
-          print = function () {
-        __p += __j.call(arguments, '');
-      };
-      __p += '<div class="storePage">\n    <div component="loadFile">load</div>\n     <a href="data:test/json;base64,' + ((__t = btoa(JSON.stringify(it.data))) == null ? '' : __t) + '" download="data.json">save</a>\n</div>';
-      return __p;
-    } } };
+},{"lessify":8}],5:[function(require,module,exports){
+module.exports={definitions:{template:function(e){var n,t="";Array.prototype.join;t+='<div class="definitionsPage">\n    ';var s=e.sections.definitions.selected;if(t+="\n    ",s){t+="\n     ";var l=e.data._meta.schemas[e.sections.definitions.selected].fields;t+='\n        <h2 class="listHeadline">'+(null==(n=e.sections.definitions.selected)?"":_.escape(n))+" "+(null==(n=e.t("properties"))?"":n)+"</h2>\n        <ul>\n            ";for(var a in l)l[a]&&(t+="\n                <li><label>"+(null==(n=a)?"":_.escape(n))+'</label>\n                    <select component="dataBind" prop="it.data._meta.schemas.'+(null==(n=s)?"":_.escape(n))+".fields."+(null==(n=a)?"":_.escape(n))+'.type" type="select">\n                        <option value="string"',"string"==l[a].type&&(t+=' selected="true"'),t+='>string</option>\n                        <option value="number"',"number"==l[a].type&&(t+=' selected="true"'),t+='>number</option>\n                        <option value="boolean"',"boolean"==l[a].type&&(t+=' selected="true"'),t+='>boolean</option>\n                        <option value="date"',"date"==l[a].type&&(t+=' selected="true"'),t+=">date</option>\n                    </select><!-- - "+(null==(n=JSON.stringify(l[a]))?"":_.escape(n))+'-->\n                    <button component="removeSchemaField" name="'+(null==(n=a)?"":_.escape(n))+'">delete</button>\n                </li>\n        <!-- '+(null==(n="string"==l[a].type?" selected":"")?"":_.escape(n))+" -->\n            ");t+='\n        </ul>\n        <button component="addNewSchemaField">'+(null==(n=e.t("add property"))?"":n)+'</button>\n        <div class="back" component="set" prop="it.sections.definitions.selected">'+(null==(n=e.t("back"))?"":n)+"</div>\n     "}else{t+='\n        <h2 class="listsHeadline">'+(null==(n=e.t("lists"))?"":n)+"</h2>\n        <ul>\n            ";for(var a in e.data._meta.schemas)t+='<li component="set" prop="it.sections.definitions.selected" value="'+(null==(n=a)?"":_.escape(n))+'">'+(null==(n=a)?"":_.escape(n))+"</li>";t+="\n        </ul>\n     "}return t+="\n</div> "}},forms:{template:function(e){var n="";Array.prototype.join;return n+='<div class="formsPage">',e.data._meta.forms&&e.data._meta.forms.length||(n+="\n    there is currently no form defined\n"),n+="</div>"}},lists:{template:function(e){var n,t="";Array.prototype.join;t+='<div class="listsPage">\n    ';var s=e.sections.lists.currentListName,l=Object.keys(e.data);l=l.filter(function(n){return Array.isArray(e.data[n])});var a=e.data[s];if(e.data._meta.schemas)var i=e.data._meta.schemas[s];var o=[];if(a&&a[0]&&(o=Object.keys(a[0])),t+='\n    \n    <ul class="listSelect">\n        ',l.forEach(function(e){t+='\n            <li class="item '+(null==(n=s==e?"selected ":"")?"":n)+'" component="set" prop="it.sections.lists.currentListName" value="'+(null==(n=e)?"":n)+'">'+(null==(n=e)?"":n)+"</li>\n        "}),t+='\n        <li class="item"><button component="createList">new</button></li>\n    </ul>\n    \n    \n    ',a&&a.length&&(t+='\n        <ul class="table">\n        ',a.forEach(function(e){t+="\n            <li>",o.forEach(function(s){t+='<div class="prop"><span class="propName">'+(null==(n=s)?"":_.escape(n))+': </span><span class="value">'+(null==(n=e[s])?"":_.escape(n))+"</span></div>"}),t+="</li>\n        "}),t+="\n        </ul>\n    "),t+="\n    ",i){t+='\n    <div class="addNew">\n        <ul>\n            ';for(var c in i.fields){var r=i.fields[c];switch(t+="\n                <li>\n                    <label>"+(null==(n=c)?"":_.escape(n))+"</label>",r.type){case"number":t+='<input component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" type="number" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"boolean":t+='<input component="dataBind" type="checkbox" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" checked="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"date":t+='<input type="date" component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"string":default:t+='<input component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>'}t+="\n                </li>\n            "}t+='\n        </ul>\n        <button component="addNewItem">add</button>\n    </div>\n    '}return t+="\n</div>"}},main:{template:function(e){var n,t="";Array.prototype.join;switch(t+='<div class="app">\n    <div class="page">\n    ',e.section){case"lists":t+=""+(null==(n=e.tM.render("./lists",e))?"":n);break;case"forms":t+=""+(null==(n=e.tM.render("./forms",e))?"":n);break;case"definitions":t+=""+(null==(n=e.tM.render("./definitions",e))?"":n);break;case"store":t+=""+(null==(n=e.tM.render("./store",e))?"":n)}return t+='\n    </div>\n    \n    <ul class="navigation">\n        <li class="item '+(null==(n="lists"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="lists">'+(null==(n=e.t("lists"))?"":n)+'</li>\n        <li class="item '+(null==(n="forms"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="forms">'+(null==(n=e.t("forms"))?"":n)+'</li>\n        <li class="item '+(null==(n="definitions"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="definitions">'+(null==(n=e.t("definitions"))?"":n)+'</li>\n        <li class="item '+(null==(n="store"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="store">'+(null==(n=e.t("load"))?"":n)+" / "+(null==(n=e.t("save"))?"":n)+"</li>\n    </ul>\n</div>\n"}},store:{template:function(e){var n,t="";Array.prototype.join;return t+='<div class="storePage">\n    <div component="loadFile">'+(null==(n=e.t("load"))?"":n)+'</div>\n    <a href="data:test/json;base64,'+(null==(n=btoa(JSON.stringify(e.data)))?"":n)+'" download="'+(null==(n=e.sections.store.saveName)?"":_.escape(n))+'">'+(null==(n=e.t("save"))?"":n)+"</a>\n    <p><label>"+(null==(n=e.t("name"))?"":n)+':</label><input component="dataBind" prop="it.sections.store.saveName" value="'+(null==(n=e.sections.store.saveName)?"":_.escape(n))+'" /></p>\n</div>'}}};
 
 },{}],6:[function(require,module,exports){
+
+},{}],7:[function(require,module,exports){
 module.exports = function (css, customDocument) {
   var doc = customDocument || document;
   if (doc.createStyleSheet) {
@@ -282,10 +53,160 @@ module.exports.byUrl = function(url) {
   }
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = require('cssify');
 
-},{"cssify":6}],8:[function(require,module,exports){
+},{"cssify":7}],9:[function(require,module,exports){
+/**
+ * @author Tobias Nickel
+ * @description minimalistic dispatcher, that fulfill the full requirement of a FLUX dispatcher.
+ * @license MIT
+ */
+
+ /**
+  * gives an object the ability to handle emittions by defining 4 attributes
+  * ._events, .on, .off and .trigger
+  */
+var tDispatcher = (function(){
+  function tDispatcher(){
+		this._events= {dispatched:[]};
+		this.isDispatching = false;
+		this._actions = [];
+  }
+
+	/**
+	 *	method that you will want to write in the documentation of your class/object.
+	 *  together with all the events you trigger by yourself
+	 *@param event {string} name of the event
+	 *@param callback {function} the function to be called when the event is triggered
+	 */
+	tDispatcher.prototype.on = function on(store, callback) {
+		if(typeof store == 'string'){
+			store={
+				event:store,
+				name:(Math.random()* 0xFFFFFFFFFFFFF).toString(16)+''+(Math.random()* 0xFFFFFFFFFFFFF).toString(16),
+				callback: callback
+			}
+		}
+        // a store has minimum the properties event, name and callback
+        //store = {
+        //  event: '',
+        //  name: 'name that others can require'
+		// 	require: [] list of other name-strings
+        //  callback: the method do call with the action
+        //}
+
+		if (!(store.event in this._events)){
+			this._events[store.event] = {};
+    }
+		this._events[store.event][store.name] = store;
+    this.addAction(store.name);
+	};
+
+	/**
+	 *	method to remove an eventlistener or even all.
+	 *@param event {string} name of the event where the call back should be removed
+	 *@param callback {function} that will be removed from the listener
+	 */
+	tDispatcher.prototype.off = function off(event,/*name or callback*/ name) {
+		if (!event) {
+			this._events = {};
+			return;
+		}
+		if (!name) {
+			delete this._events[event];
+		} else {
+			if(this._events[event]){
+				if("function" == typeof name){
+					var events = this._events[event];
+					for(var i in events){
+						if(events[i].callback === name){
+							delete events[i];
+						}
+					}
+				}else{
+					delete this._events[event][name];
+				}
+			}
+		}
+	};
+
+	/**
+	 *  executing all listener that are registered on the event
+	 *@param event {string} name of the event to be triggered
+	 *@args args {mixed} anything that you want to be passed to the listeners callback
+	 */
+	tDispatcher.prototype.trigger = function trigger(action,/*optional*/value) {
+		if(typeof action === 'string'){
+			action = {event:action};
+    }
+		if(value !== undefined){
+			action.value=value;
+    }
+		if (!action.event) return;
+		this._actions.push(action);
+		if(this.isDispatching) return;
+
+    this.isDispatching = true;
+		while(action = this._actions.shift()){
+      if (!this._events[action.event]){
+        continue;
+      }
+			var solvedRoundCount = 1;
+			var todoEvents = {};
+			var events = this._events[action.event];
+			for(var i in events){
+				todoEvents[i] = events[i];
+      }
+
+			var done = {};
+			while(solvedRoundCount != 0){
+				solvedRoundCount = 0;
+				for(var i in todoEvents) {
+					if(todoEvents[i].require){
+						var found=false;
+						for(var r = 0; r<todoEvents[i].require.length; r++){
+							if(!done[todoEvents[i].require[r]]){
+								found=true;
+								break;
+							}
+						}
+						if(found)continue;
+					}
+
+					done[i]=true;
+					todoEvents[i].callback(action);
+					delete todoEvents[i];
+					solvedRoundCount++;
+				}
+			}
+    }
+    var events = this._events["dispatched"];
+    for(var i in events){
+      events[i].callback();
+    }
+    this.isDispatching = false;
+	};
+
+  /**
+   * create a method on the dispatcher, that dispatches the Event of the given name
+   * @param name {string} the name of the Action and the method.
+   */
+  tDispatcher.prototype.addAction = function(name){
+    if(!this[name]){
+      this[name]=function(value){
+        this.trigger('name', value);
+      };
+    }
+  };
+
+  return tDispatcher
+})();
+
+if('object' === typeof module){ module.exports=tDispatcher; }
+//test
+
+},{}],10:[function(require,module,exports){
 var TemplateManager = (function() {
   "use strict";
 
@@ -548,7 +469,7 @@ function dirname(path) {
   return join(path, "..");
 }
 
-},{"fs":11}],9:[function(require,module,exports){
+},{"fs":6}],11:[function(require,module,exports){
 // loading tXML, an xmlParser by Tobias Nickel(https://github.com/TobiasNickel/tXml)
 function tXml(b){function k(){for(var f=[];b[a];){
     if(60==b.charCodeAt(a)){if(47===b.charCodeAt(a+1)){a=b.indexOf(">",a);break
@@ -647,7 +568,7 @@ var TreeAct = (function() {
         orgXml.ids = orgXml.ids || {};
 
         //make sure, the nodes and objects are connected
-        if (orgXml[0] && !orgXml[0].node) {
+        if (orgXml[0] ) {//&& !orgXml[0].node
             var children = root.childNodes;
             for (var i = 0; i < orgXml.length; i++) {
                 if (typeof orgXml[i] == "string") orgXml[i] = [orgXml[i]];
@@ -761,8 +682,8 @@ var TreeAct = (function() {
      *@param node {tXml}
      */
     function getNodeLabel(node) {
-        if (!node.tagName) return node[0];
-        if (!node.attributes) return node.tagNlame;
+        if (!node.tagName) return 'string::'+node[0];
+        if (!node.attributes) return node.tagName;
         var id = node.attributes.id ? "#" + node.attributes.id : "";
         var classname = node.attributes['class'] ? ":" + node.attributes['class'].split(" ")[0] : "";
         var componentName = node.attributes.component ? '('+node.attributes.component+')' : ''
@@ -811,11 +732,11 @@ var TreeAct = (function() {
      this.components[name].prototype = thePrototype;
    };
     return TreeAct;
-})()
+})();
 
 if(typeof module == 'object') module.exports = TreeAct;
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2364,7 +2285,5 @@ if(typeof module == 'object') module.exports = TreeAct;
     });
   }
 }.call(this));
-
-},{}],11:[function(require,module,exports){
 
 },{}]},{},[3]);
