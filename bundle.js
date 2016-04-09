@@ -1,20 +1,32 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var appData=module.exports={appName:"dData",data:{_meta:{schemas:{}}},section:"lists",sections:{lists:{currentListName:"none",currentList:[],newValues:{},"new":!1},definitions:{selected:null},store:{saveName:"data.json"}},userLanguage:"en",languages:{en:{load:"load",save:"save",lists:"lists",forms:"forms",definitions:"definitions","new":"new",back:"back",properties:"properties","add property":"add property",name:"name"},de:{load:"laden",save:"speichern",lists:"Listen",forms:"Formulare",definitions:"Definitionen","new":"neu",back:"zurück",properties:"Eigenschaften","add property":"neue Eigenschaft",name:"Name"},zh:{load:"打开",save:"保存",lists:"列表",forms:"表格",definitions:"定义","new":"新",back:"返回",properties:"特质","add property":"新特质",name:"名称"}},t:function(e){return appData.languages[appData.userLanguage][e]||e}},language=navigator.language.substr(0,2).toLowerCase();appData.languages[language]&&(appData.userLanguage=language),module.exports.sections.lists.currentList=module.exports.data.Contacts;
+var appData=module.exports={appName:"dData",data:{_meta:{schemas:{}}},section:"lists",sections:{lists:{currentListName:"none",currentList:[],newValues:{},"new":!1},definitions:{selected:null},store:{saveName:"data.json"}},userLanguage:"en",languages:{en:{load:"load",save:"save",lists:"lists",forms:"forms",definitions:"definitions","new":"new",back:"back",properties:"properties","add property":"add property",name:"name"},de:{load:"laden",save:"speichern",lists:"Listen",forms:"Formulare",definitions:"Definitionen","new":"neu",back:"zurück",properties:"Eigenschaften","add property":"neue Eigenschaft",name:"Name"},zh:{load:"打开",save:"保存",lists:"列表",forms:"表格",definitions:"定义","new":"新",back:"返回",properties:"特质","add property":"新特质",name:"名称"}},t:function(e){return appData.languages[appData.userLanguage][e]||e},fileContent:""},language=navigator.language.substr(0,2).toLowerCase();appData.languages[language]&&(appData.userLanguage=language),module.exports.sections.lists.currentList=module.exports.data.Contacts;
 
 },{}],2:[function(require,module,exports){
-function set(e,t){var a=e;e=e.split(".");for(var r,n={it:appData};r=e.shift();){if(0==e.length)return void(n[r]=t);n=n[r]}throw"can not set: "+a}function ensureMeta(e){e._meta||(e._meta={schemas:{}});var t=e._meta;for(var a in e)"_meta"!==a&&Array.isArray(e[a])&&(t.schemas[a]||(t.schemas[a]=createListsDefaultSchema(e[a])))}function createListsDefaultSchema(e){var t={fields:{}};if(e.length)for(var a in e[0])t.fields[a]||(t.fields[a]={type:typeof e[0][a]});return t}var appData=require("../appData"),app=require("../main");module.exports.set=function(e){e.style.cursor="pointer",e.addEventListener("click",function(){console.log("click");var t=e.getAttribute("prop");set(t,e.getAttribute("value")),app.rerender()})},module.exports.unset=function(e){e.style.cursor="pointer",e.addEventListener("click",function(){var t=e.getAttribute("prop");set(t,void 0),app.rerender()})},module.exports.dataBind=function(e){e.tagName.toLowerCase();e.addEventListener("change",function(){var t=e.value,a=e.getAttribute("prop");set(a,t),app.rerender()})},module.exports.loadFile=function(e){e.style.cursor="pointer";var t=document.createElement("input");t.setAttribute("type","file"),t.setAttribute("accept","json"),t.hidden=!0,e.appendChild(t),e.addEventListener("click",function(){t.click()}),t.addEventListener("change",function(){var e=new FileReader,a=t.files[0];e.readAsText(a),e.onload=function(){appData.data=JSON.parse(e.result),ensureMeta(appData.data),appData.sections.store.saveName=a.name,console.log(appData.data),app.rerender()}})},module.exports.createList=function(e){e.addEventListener("click",function(){var e=prompt("name:");e&&(appData.data[e]?alert("already exist"):(appData.data[e]=[],appData.data._meta.schemas[e]={fields:{}},app.rerender()))})},module.exports.addNewItem=function(e){e.addEventListener("click",function(){var e=appData.sections.lists.newValues,t=appData.data._meta.schemas[appData.sections.lists.currentListName];for(var a in t){var r=t[a];"number"==r.type?e[a]=parseFloat(e[a]):"boolean"==r.type&&(e[a]="on"==e[a])}appData.sections.lists.newValues={},appData.data[appData.sections.lists.currentListName].push(e),app.rerender()})},module.exports.removeSchemaField=function(e){e.addEventListener("click",function(){var t=e.getAttribute("name");delete appData.data._meta.schemas[appData.sections.definitions.selected].fields[t],app.rerender()})},module.exports.addNewSchemaField=function(e){e.addEventListener("click",function(){var e=prompt("get a name for the new property:");e&&(appData.data._meta.schemas[appData.sections.definitions.selected].fields[e]={type:"string"},app.rerender())})};
+var appData=require("../appData"),app=require("../main"),dispatcher=app.dispatcher;require("../stores/metaStore");var setComponent=require("./setComponent");module.exports.set=setComponent.set,module.exports.unset=setComponent.unset,module.exports.dataBind=setComponent.dataBind,module.exports.loadFile=function(e){e.style.cursor="pointer";var t=document.createElement("input");t.setAttribute("type","file"),t.setAttribute("accept","json"),t.hidden=!0,e.appendChild(t),e.addEventListener("click",function(){t.click()}),t.addEventListener("change",function(){var e=new FileReader,a=t.files[0];e.readAsText(a),e.onload=function(){var t=JSON.parse(e.result);dispatcher.dataLoaded({data:t,filename:a.name})}})},module.exports.createList=function(e){e.addEventListener("click",function(){var e=prompt(appData.t("name")+":");e&&dispatcher.newList({name:e})})},module.exports.removeList=function(e){e.addEventListener("click",function(){var t=e.getAttribute("name");console.log(t),t&&dispatcher.removeList({name:t})})},module.exports.removeListItem=function(e){e.addEventListener("click",function(){var t=e.getAttribute("name"),a=e.getAttribute("index");t&&a&&dispatcher.removeListItem({name:t,index:a})})},module.exports.addNewItem=function(e){e.addEventListener("click",function(){var e=appData.sections.lists.newValues,t=appData.data._meta.schemas[appData.sections.lists.currentListName];for(var a in t){var n=t[a];"number"==n.type?e[a]=parseFloat(e[a]):"boolean"==n.type&&(e[a]="on"==e[a])}appData.sections.lists.newValues={},appData.data[appData.sections.lists.currentListName].push(e),app.rerender()})},module.exports.removeSchemaField=function(e){e.addEventListener("click",function(){var t=e.getAttribute("name");delete appData.data._meta.schemas[appData.sections.definitions.selected].fields[t],app.rerender()})},module.exports.addNewSchemaField=function(e){e.addEventListener("click",function(){var e=prompt(appData.t("name")+":");e&&(appData.data._meta.schemas[appData.sections.definitions.selected].fields[e]={type:"string"},app.rerender())})};
 
-},{"../appData":1,"../main":3}],3:[function(require,module,exports){
-function rerender(){var e=tM.render("main",appData);treeAct.render(e)}var TreeAct=require("treeact"),TemplateManager=require("templatemanager"),templates=require("./templates"),_=require("underscore"),components=require("./components/mainComponents");require("./style.less");var appData=require("./appData"),TDispatcher=require("tdispatcher");window._=_,appData.currentList=appData.data.contacts;var tM=new TemplateManager("underscore");tM.templates=templates,tM.fileExtension="html",tM.nameOfTemplatemanager="tM";var treeAct=new TreeAct(document.body);treeAct.components=components,rerender(),module.exports.rerender=rerender,module.exports.appData=appData,module.exports.dispatcher=new TDispatcher,window.rerender=rerender,window.appData=appData,window.app=module.exports;
-},{"./appData":1,"./components/mainComponents":2,"./style.less":4,"./templates":5,"tdispatcher":9,"templatemanager":10,"treeact":11,"underscore":12}],4:[function(require,module,exports){
-var css="* {\n  margin: 0px;\n  padding: 0px;\n}\nbody {\n  background-color: #ddd;\n}\n.app {\n  max-width: 640px;\n  width: 100%;\n  padding: 0 0px;\n  font-family: monospace;\n  font-size: 16px;\n  position: relative;\n  bottom: 0px;\n  top: 0px;\n  margin: auto;\n  height: 100%;\n}\n.app .navigation {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  right: 0px;\n  padding: 5px;\n  background-color: #fff;\n  text-align: center;\n}\n.app .navigation li {\n  display: inline;\n  padding: 0px 5px;\n  border-left: 1px #666 solid;\n  text-align: center;\n}\n.app .navigation li.selected {\n  font-weight: bold;\n}\n.app .navigation li:first-child {\n  border-left: 0px;\n}\n.listSelect {\n  background-color: white;\n  margin-bottom: 10px;\n  height: 28px;\n  padding-top: 8px;\n  overflow-y: scroll;\n}\n.listSelect li {\n  display: table-cell;\n  padding: 0 20px;\n}\n.listSelect li.selected {\n  font-weight: bold;\n}\n.listsPage .addNew {\n  background-color: white;\n  margin: 5px;\n  padding: 5px;\n}\n.listsPage .addNew label {\n  width: 120px;\n  display: inline-block;\n  overflow: hidden;\n}\n.table li {\n  margin: 0px 8px;\n  padding: 5px 5px;\n  height: 20px;\n  overflow: hidden;\n  background-color: white;\n  transition: 0.3s linear height;\n  line-height: 24px;\n}\n.table li .prop {\n  display: block;\n  padding-left: 13px;\n}\n.table li .prop .propName {\n  display: none;\n  color: #636363;\n  padding-right: 4px;\n}\n.table li .prop:first-child {\n  padding-left: 3px;\n}\n.table li:hover {\n  height: initial;\n}\n.table li:hover .propName {\n  display: inline;\n}\n.table li:nth-child(ODD) {\n  background-color: #F9F9F9;\n}\n.storePage {\n  text-align: center;\n  font-size: 30px;\n}\n.storePage * {\n  color: black;\n  padding: 60px;\n  text-decoration: none;\n}\n.storePage input {\n  padding: 4px;\n  font-size: 20px;\n}\n.definitionsPage .back {\n  margin-top: 30px;\n}\n.definitionsPage ul {\n  padding: 5px 5px;\n}\n.definitionsPage ul li {\n  position: relative;\n  background-color: white;\n  min-height: 24px;\n  padding-top: 8px;\n}\n.definitionsPage ul li:nth-child(ODD) {\n  background-color: #F9F9F9;\n}\n.definitionsPage ul li label {\n  padding: 0px 17px;\n}\n.definitionsPage ul li button {\n  position: absolute;\n  right: 8px;\n}\n.definitionsPage ul li select {\n  position: absolute;\n  right: 80px;\n}\nbutton {\n  background-color: white;\n  box-shadow: 1px 1px 2px black;\n  border-width: 0px;\n  padding: 2px 10px;\n  margin: 3px;\n}\nbutton:active {\n  margin: 4px 4px;\n  box-shadow: none;\n}\ninput {\n  background-color: white;\n  border: 1px solid lightgray;\n}\nselect {\n  background-color: white;\n}\nul {\n  list-style-type: none;\n}\n.page {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  right: 0px;\n  bottom: 30px;\n  overflow: scroll;\n}\n";require("lessify")(css),module.exports=css;
+},{"../appData":1,"../main":4,"../stores/metaStore":7,"./setComponent":3}],3:[function(require,module,exports){
+function set(t,e){var r=t;t=t.split(".");for(var n,i={it:appData};n=t.shift();){if(0==t.length)return void(i[n]=e);i=i[n]}throw"can not set: "+r}function get(t){t=t.split(".");for(var e,r={it:appData};e=t.shift();){if(0==t.length)return r[e];if(r=r[e],"object"!=typeof r)return}}var app=require("../main"),appData=require("../appData"),tmitter=require("tmitter"),components={set:function(t){t.style.cursor="pointer",t.addEventListener("click",function(){console.log("click");var e=t.getAttribute("prop");set(e,t.getAttribute("value")),app.rerender()})},unset:function(t){t.style.cursor="pointer",t.addEventListener("click",function(){var e=t.getAttribute("prop");set(e,void 0),app.rerender()})},dataBind:function(t){t.tagName.toLowerCase();t.addEventListener("change",function(){var e=t.value,r=t.getAttribute("prop");get(r)!==e&&(set(r,e),app.rerender())})}};tmitter(components),module.exports=components;
 
-},{"lessify":8}],5:[function(require,module,exports){
-module.exports={definitions:{template:function(e){var n,t="";Array.prototype.join;t+='<div class="definitionsPage">\n    ';var s=e.sections.definitions.selected;if(t+="\n    ",s){t+="\n     ";var l=e.data._meta.schemas[e.sections.definitions.selected].fields;t+='\n        <h2 class="listHeadline">'+(null==(n=e.sections.definitions.selected)?"":_.escape(n))+" "+(null==(n=e.t("properties"))?"":n)+"</h2>\n        <ul>\n            ";for(var a in l)l[a]&&(t+="\n                <li><label>"+(null==(n=a)?"":_.escape(n))+'</label>\n                    <select component="dataBind" prop="it.data._meta.schemas.'+(null==(n=s)?"":_.escape(n))+".fields."+(null==(n=a)?"":_.escape(n))+'.type" type="select">\n                        <option value="string"',"string"==l[a].type&&(t+=' selected="true"'),t+='>string</option>\n                        <option value="number"',"number"==l[a].type&&(t+=' selected="true"'),t+='>number</option>\n                        <option value="boolean"',"boolean"==l[a].type&&(t+=' selected="true"'),t+='>boolean</option>\n                        <option value="date"',"date"==l[a].type&&(t+=' selected="true"'),t+=">date</option>\n                    </select><!-- - "+(null==(n=JSON.stringify(l[a]))?"":_.escape(n))+'-->\n                    <button component="removeSchemaField" name="'+(null==(n=a)?"":_.escape(n))+'">delete</button>\n                </li>\n        <!-- '+(null==(n="string"==l[a].type?" selected":"")?"":_.escape(n))+" -->\n            ");t+='\n        </ul>\n        <button component="addNewSchemaField">'+(null==(n=e.t("add property"))?"":n)+'</button>\n        <div class="back" component="set" prop="it.sections.definitions.selected">'+(null==(n=e.t("back"))?"":n)+"</div>\n     "}else{t+='\n        <h2 class="listsHeadline">'+(null==(n=e.t("lists"))?"":n)+'</h2>\n        <ul class="listDefinitionsList">\n            ';for(var a in e.data._meta.schemas)t+='<li component="set" prop="it.sections.definitions.selected" value="'+(null==(n=a)?"":_.escape(n))+'">'+(null==(n=a)?"":_.escape(n))+"</li>";t+="\n        </ul>\n     "}return t+="\n</div> "}},forms:{template:function(e){var n="";Array.prototype.join;return n+='<div class="formsPage">',e.data._meta.forms&&e.data._meta.forms.length||(n+="\n    there is currently no form defined\n"),n+="</div>"}},lists:{template:function(e){var n,t="";Array.prototype.join;t+='<div class="listsPage">\n    ';var s=e.sections.lists.currentListName,l=Object.keys(e.data);l=l.filter(function(n){return Array.isArray(e.data[n])});var a=e.data[s];if(e.data._meta.schemas)var i=e.data._meta.schemas[s];var o=[];if(a&&a[0]&&(o=Object.keys(a[0])),t+='\n    \n    <ul class="listSelect">\n        ',l.forEach(function(e){t+='\n            <li class="item '+(null==(n=s==e?"selected ":"")?"":n)+'" component="set" prop="it.sections.lists.currentListName" value="'+(null==(n=e)?"":n)+'">'+(null==(n=e)?"":n)+"</li>\n        "}),t+='\n        <li class="item"><button component="createList">'+(null==(n=e.t("new"))?"":n)+"</button></li>\n    </ul>\n    \n    \n    ",a&&a.length&&(t+='\n        <ul class="table">\n        ',a.forEach(function(e){t+="\n            <li>",o.forEach(function(s){t+='<div class="prop"><span class="propName">'+(null==(n=s)?"":_.escape(n))+': </span><span class="value">'+(null==(n=e[s])?"":_.escape(n))+"</span></div>"}),t+="</li>\n        "}),t+="\n        </ul>\n    "),t+="\n    ",i){t+='\n    <div class="addNew">\n        <ul>\n            ';for(var c in i.fields){var r=i.fields[c];switch(t+="\n                <li>\n                    <label>"+(null==(n=c)?"":_.escape(n))+"</label>",r.type){case"number":t+='<input component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" type="number" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"boolean":t+='<input component="dataBind" type="checkbox" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" checked="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"date":t+='<input type="date" component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"string":default:t+='<input component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>'}t+="\n                </li>\n            "}t+='\n        </ul>\n        <button component="addNewItem">add</button>\n    </div>\n    '}return t+="\n</div>"}},main:{template:function(e){var n,t="";Array.prototype.join;switch(t+='<div class="app">\r\n    <div class="page">\r\n    ',e.section){case"lists":t+=""+(null==(n=e.tM.render("./lists",e))?"":n);break;case"forms":t+=""+(null==(n=e.tM.render("./forms",e))?"":n);break;case"definitions":t+=""+(null==(n=e.tM.render("./definitions",e))?"":n);break;case"store":t+=""+(null==(n=e.tM.render("./store",e))?"":n)}return t+='\r\n    </div>\r\n    \r\n    <ul class="navigation">\r\n        <li class="item '+(null==(n="lists"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="lists">'+(null==(n=e.t("lists"))?"":n)+'</li>\r\n        <!--<li class="item '+(null==(n="forms"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="forms">'+(null==(n=e.t("forms"))?"":n)+'</li>-->\r\n        <li class="item '+(null==(n="definitions"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="definitions">'+(null==(n=e.t("definitions"))?"":n)+'</li>\r\n        <li class="item '+(null==(n="store"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="store">'+(null==(n=e.t("load"))?"":n)+" / "+(null==(n=e.t("save"))?"":n)+"</li>\r\n    </ul>\r\n</div>\r\n"}},store:{template:function(e){var n,t="";Array.prototype.join;return t+='<div class="storePage">\n    <div component="loadFile">'+(null==(n=e.t("load"))?"":n)+'</div>\n    <a href="data:test/json;base64,'+(null==(n=btoa(JSON.stringify(e.data)))?"":n)+'" download="'+(null==(n=e.sections.store.saveName)?"":_.escape(n))+'">'+(null==(n=e.t("save"))?"":n)+"</a>\n    <p><label>"+(null==(n=e.t("name"))?"":n)+':</label><input component="dataBind" prop="it.sections.store.saveName" value="'+(null==(n=e.sections.store.saveName)?"":_.escape(n))+'" /></p>\n</div>'}}};
+},{"../appData":1,"../main":4,"tmitter":15}],4:[function(require,module,exports){
+function rerender(){var e=tM.render("main",appData);treeAct.render(e)}var TreeAct=require("treeact");module.exports.dispatcher=require("./stores/dispatcher");var TemplateManager=require("templatemanager"),templates=require("./templates"),_=require("underscore"),components=require("./components/mainComponents");require("./style.less");var appData=require("./appData");window._=_,appData.currentList=appData.data.contacts;var tM=new TemplateManager("underscore");tM.templates=templates,tM.fileExtension="html",tM.nameOfTemplatemanager="tM";var treeAct=new TreeAct(document.body);treeAct.components=components,rerender(),module.exports.rerender=rerender,module.exports.appData=appData,window.rerender=rerender,window.appData=appData,window.app=module.exports;
+},{"./appData":1,"./components/mainComponents":2,"./stores/dispatcher":5,"./style.less":8,"./templates":9,"templatemanager":14,"treeact":16,"underscore":17}],5:[function(require,module,exports){
+var TDispatcher=require("tdispatcher"),dispatcher=new TDispatcher;module.exports=dispatcher,require("./listStore")(dispatcher),require("./metaStore")(dispatcher);
 
-},{}],6:[function(require,module,exports){
+},{"./listStore":6,"./metaStore":7,"tdispatcher":13}],6:[function(require,module,exports){
+var app=require("../main"),appData=require("../appData");module.exports=function(a){a.on("newList",function(a){var e=a.value.name;appData.data[e]?alert("already exist"):(appData.data[e]=[],appData.data._meta.schemas[e]={fields:{id:{type:"number",auto:!0,"default":function(a,e){var t=-(1/0);return a.forEach(function(a){a[e]>t&&(t=a[e])}),t}}},primary:"id"},app.rerender())}),a.on("removeList",function(a){var e=a.value.name;appData.data[e]&&(delete appData.data[e],delete appData.data._meta.schemas[e],app.rerender())}),a.on("removeListItem",function(a){var e=a.value.name,t=parseInt(a.value.index);if(appData.data[e]&&t+1){var p=appData.data[e];p.splice(t,1),app.rerender()}})};
 
-},{}],7:[function(require,module,exports){
+},{"../appData":1,"../main":4}],7:[function(require,module,exports){
+function ensureMeta(a){a._meta||(a._meta={schemas:{}});var e=a._meta,t=Object.keys(a);t.forEach(function(t){"_meta"!==t&&Array.isArray(a[t])&&!e.schemas[t]&&(e.schemas[t]=createListsDefaultSchema(a[t]))})}function createListsDefaultSchema(a){var e={fields:{}};if(a.length){var t=Object.keys(a[0]);t.forEach(function(t){e.fields[t]||(e.fields[t]={type:typeof a[0][t]})}),e.primary=t[0],e.display="function(row){return (row['"+t.join("']+', '+row['")+"']).substr(0,30); }"}return e}var app=require("../main"),appData=require("../appData");module.exports=function(a){a.on("dataLoaded",function(a){var e=a.value;appData.data=e.data,ensureMeta(appData.data),appData.sections.store.saveName=e.filename,app.rerender()})};
+
+},{"../appData":1,"../main":4}],8:[function(require,module,exports){
+var css="* {\n  margin: 0px;\n  padding: 0px;\n}\nbody {\n  background-color: #ddd;\n}\n.app {\n  max-width: 640px;\n  width: 100%;\n  padding: 0 0px;\n  font-family: monospace;\n  font-size: 16px;\n  position: relative;\n  bottom: 0px;\n  top: 0px;\n  margin: auto;\n  height: 100%;\n}\n.app .navigation {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  right: 0px;\n  padding: 5px;\n  background-color: #fff;\n  text-align: center;\n}\n.app .navigation li {\n  display: inline;\n  padding: 0px 5px;\n  border-left: 1px #666 solid;\n  text-align: center;\n}\n.app .navigation li.selected {\n  font-weight: bold;\n}\n.app .navigation li:first-child {\n  border-left: 0px;\n}\n.listSelect {\n  background-color: white;\n  margin-bottom: 10px;\n  height: 28px;\n  padding-top: 8px;\n  overflow-y: auto;\n}\n.listSelect li {\n  display: table-cell;\n  padding: 0 20px;\n}\n.listSelect li.selected {\n  font-weight: bold;\n}\n.listsPage .addNew {\n  background-color: white;\n  margin: 5px;\n  padding: 5px;\n}\n.listsPage .addNew label {\n  width: 120px;\n  display: inline-block;\n  overflow: hidden;\n}\n.table li {\n  margin: 0px 8px;\n  padding: 5px 5px;\n  height: 20px;\n  overflow: hidden;\n  background-color: white;\n  transition: 0.3s linear height;\n  line-height: 24px;\n}\n.table li .prop {\n  display: block;\n  padding-left: 13px;\n}\n.table li .prop .propName {\n  display: none;\n  color: #636363;\n  padding-right: 4px;\n}\n.table li .prop:first-child {\n  padding-left: 3px;\n}\n.table li:hover {\n  height: initial;\n}\n.table li:hover .propName {\n  display: inline;\n}\n.table li:nth-child(ODD) {\n  background-color: #F9F9F9;\n}\n.table li button {\n  float: right;\n}\n.storePage {\n  text-align: center;\n  font-size: 30px;\n}\n.storePage * {\n  color: black;\n  padding: 60px;\n  text-decoration: none;\n}\n.storePage input {\n  padding: 4px;\n  font-size: 20px;\n}\n.definitionsPage .back {\n  margin-top: 30px;\n}\n.definitionsPage ul {\n  padding: 5px 5px;\n}\n.definitionsPage ul li {\n  position: relative;\n  background-color: white;\n  min-height: 24px;\n  padding-top: 8px;\n}\n.definitionsPage ul li:nth-child(ODD) {\n  background-color: #F9F9F9;\n}\n.definitionsPage ul li label {\n  padding: 0px 17px;\n}\n.definitionsPage ul li button {\n  position: absolute;\n  right: 8px;\n}\n.definitionsPage ul li select {\n  position: absolute;\n  right: 80px;\n}\nbutton {\n  background-color: white;\n  box-shadow: 1px 1px 2px black;\n  border-width: 0px;\n  padding: 2px 10px;\n  margin: 3px;\n}\nbutton:active {\n  margin: 4px 4px;\n  box-shadow: none;\n}\ninput {\n  background-color: white;\n  border: 1px solid lightgray;\n}\nselect {\n  background-color: white;\n}\nul {\n  list-style-type: none;\n}\n.page {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  right: 0px;\n  bottom: 30px;\n  overflow: auto;\n}\n";require("lessify")(css),module.exports=css;
+
+},{"lessify":12}],9:[function(require,module,exports){
+module.exports={definitions:{template:function(e){var n,t="";Array.prototype.join;t+='<div class="definitionsPage">\n    ';var s=e.sections.definitions.selected;if(t+="\n    ",s){t+="\n     ";var l=e.data._meta.schemas[e.sections.definitions.selected].fields;t+='\n        <h2 class="listHeadline">'+(null==(n=e.sections.definitions.selected)?"":_.escape(n))+" "+(null==(n=e.t("properties"))?"":n)+"</h2>\n        <ul>\n            ";for(var a in l)l[a]&&(t+="\n                <li><label>"+(null==(n=a)?"":_.escape(n))+'</label>\n                    <select component="dataBind" prop="it.data._meta.schemas.'+(null==(n=s)?"":_.escape(n))+".fields."+(null==(n=a)?"":_.escape(n))+'.type" type="select">\n                        <option value="string"',"string"==l[a].type&&(t+=' selected="true"'),t+='>string</option>\n                        <option value="number"',"number"==l[a].type&&(t+=' selected="true"'),t+='>number</option>\n                        <option value="boolean"',"boolean"==l[a].type&&(t+=' selected="true"'),t+='>boolean</option>\n                        <option value="date"',"date"==l[a].type&&(t+=' selected="true"'),t+=">date</option>\n                    </select><!-- - "+(null==(n=JSON.stringify(l[a]))?"":_.escape(n))+'-->\n                    <button component="removeSchemaField" name="'+(null==(n=a)?"":_.escape(n))+'">delete</button>\n                </li>\n        <!-- '+(null==(n="string"==l[a].type?" selected":"")?"":_.escape(n))+" -->\n            ");t+='\n        </ul>\n        <button component="addNewSchemaField">'+(null==(n=e.t("add property"))?"":n)+'</button>\n        <div class="back" component="set" prop="it.sections.definitions.selected">'+(null==(n=e.t("back"))?"":n)+"</div>\n     "}else{t+='\n        <h2 class="listsHeadline">'+(null==(n=e.t("lists"))?"":n)+'<button component="createList">'+(null==(n=e.t("new"))?"":n)+'</button></h2>\n        <ul class="listDefinitionsList">\n            ';for(var a in e.data._meta.schemas)t+='<li>\n                <span component="set" prop="it.sections.definitions.selected" value="'+(null==(n=a)?"":_.escape(n))+'">'+(null==(n=a)?"":_.escape(n))+'</span>\n                <button component="removeList" name="'+(null==(n=a)?"":_.escape(n))+'">'+(null==(n=e.t("delete"))?"":n)+"</button>\n            </li>";t+="\n        </ul>\n     "}return t+="\n</div> "}},forms:{template:function(e){var n="";Array.prototype.join;return n+='<div class="formsPage">',e.data._meta.forms&&e.data._meta.forms.length||(n+="\n    there is currently no form defined\n"),n+="</div>"}},lists:{template:function(e){var n,t="";Array.prototype.join;t+='<div class="listsPage">\n    ';var s=e.sections.lists.currentListName,l=Object.keys(e.data);l=l.filter(function(n){return Array.isArray(e.data[n])});var a=e.data[s];if(e.data._meta.schemas)var i=e.data._meta.schemas[s];var o=[];if(a&&a[0]&&(o=Object.keys(a[0])),t+='\n    \n    <ul class="listSelect">\n        ',l.forEach(function(e){t+='\n            <li class="item '+(null==(n=s==e?"selected ":"")?"":n)+'" component="set" prop="it.sections.lists.currentListName" value="'+(null==(n=e)?"":n)+'">'+(null==(n=e)?"":n)+"</li>\n        "}),t+='\n        <li class="item"><button component="createList">'+(null==(n=e.t("new"))?"":n)+"</button></li>\n    </ul>\n    \n    \n    ",a&&a.length&&(t+='\n        <ul class="table">\n        ',a.forEach(function(e,l){t+="\n            <li>",o.forEach(function(s){t+='\n                <div class="prop">\n                    <span class="propName">'+(null==(n=s)?"":_.escape(n))+': </span>\n                    <span class="value">'+(null==(n=e[s])?"":_.escape(n))+"</span>\n                </div>\n            "}),t+='<button component="removeListItem" name="'+(null==(n=s)?"":_.escape(n))+'" index="'+(null==(n=l)?"":n)+'">delete</button></li>\n        '}),t+="\n        </ul>\n    "),t+="\n    ",i){t+='\n    <div class="addNew">\n        <ul>\n            ';for(var c in i.fields){var r=i.fields[c];switch(t+="\n                <li>\n                    <label>"+(null==(n=c)?"":_.escape(n))+"</label>",r.type){case"number":t+='<input component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" type="number" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"boolean":t+='<input component="dataBind" type="checkbox" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" checked="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"date":t+='<input type="date" component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>';break;case"string":default:t+='<input component="dataBind" prop="it.sections.lists.newValues.'+(null==(n=c)?"":_.escape(n))+'" value="'+(null==(n=e.sections.lists.newValues[c]||"")?"":_.escape(n))+'"/>'}t+="\n                </li>\n            "}t+='\n        </ul>\n        <button component="addNewItem">add</button>\n    </div>\n    '}return t+="\n</div>"}},main:{template:function(e){var n,t="";Array.prototype.join;switch(t+='<div class="app">\r\n    <div class="page">\r\n    ',e.section){case"lists":t+=""+(null==(n=e.tM.render("./lists",e))?"":n);break;case"forms":t+=""+(null==(n=e.tM.render("./forms",e))?"":n);break;case"definitions":t+=""+(null==(n=e.tM.render("./definitions",e))?"":n);break;case"store":t+=""+(null==(n=e.tM.render("./store",e))?"":n)}return t+='\r\n    </div>\r\n    \r\n    <ul class="navigation">\r\n        <li class="item '+(null==(n="lists"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="lists">'+(null==(n=e.t("lists"))?"":n)+'</li>\r\n        <!--<li class="item '+(null==(n="forms"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="forms">'+(null==(n=e.t("forms"))?"":n)+'</li>-->\r\n        <li class="item '+(null==(n="definitions"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="definitions">'+(null==(n=e.t("definitions"))?"":n)+'</li>\r\n        <li class="item '+(null==(n="store"==e.section?"selected ":"")?"":n)+'" component="set" prop="it.section" value="store">'+(null==(n=e.t("load"))?"":n)+" / "+(null==(n=e.t("save"))?"":n)+"</li>\r\n    </ul>\r\n</div>\r\n"}},store:{template:function(e){var n,t="";Array.prototype.join;return t+='<div class="storePage">\n    <div component="loadFile">'+(null==(n=e.t("load"))?"":n)+'</div>\n    <a href="data:test/json;base64,'+(null==(n=btoa(JSON.stringify(e.data)))?"":n)+'" download="'+(null==(n=e.sections.store.saveName)?"":_.escape(n))+'">'+(null==(n=e.t("save"))?"":n)+"</a>\n    <p><label>"+(null==(n=e.t("name"))?"":n)+':</label><input component="dataBind" prop="it.sections.store.saveName" value="'+(null==(n=e.sections.store.saveName)?"":_.escape(n))+'" /></p>\n</div>'}}};
+
+},{}],10:[function(require,module,exports){
+
+},{}],11:[function(require,module,exports){
 module.exports = function (css, customDocument) {
   var doc = customDocument || document;
   if (doc.createStyleSheet) {
@@ -53,10 +65,10 @@ module.exports.byUrl = function(url) {
   }
 };
 
-},{}],8:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = require('cssify');
 
-},{"cssify":7}],9:[function(require,module,exports){
+},{"cssify":11}],13:[function(require,module,exports){
 /**
  * @author Tobias Nickel
  * @description minimalistic dispatcher, that fulfill the full requirement of a FLUX dispatcher.
@@ -84,7 +96,7 @@ var tDispatcher = (function(){
 		if(typeof store == 'string'){
 			store={
 				event:store,
-				name:(Math.random()* 0xFFFFFFFFFFFFF).toString(16)+''+(Math.random()* 0xFFFFFFFFFFFFF).toString(16),
+				name:(Math.random()* 0xFFFFFFFFFFFFF).toString(32)+''+(Math.random()* 0xFFFFFFFFFFFFF).toString(32),
 				callback: callback
 			}
 		}
@@ -100,7 +112,7 @@ var tDispatcher = (function(){
 			this._events[store.event] = {};
     }
 		this._events[store.event][store.name] = store;
-    this.addAction(store.name);
+    this.addAction(store.event);
 	};
 
 	/**
@@ -195,7 +207,7 @@ var tDispatcher = (function(){
   tDispatcher.prototype.addAction = function(name){
     if(!this[name]){
       this[name]=function(value){
-        this.trigger('name', value);
+        this.trigger(name, value);
       };
     }
   };
@@ -206,7 +218,7 @@ var tDispatcher = (function(){
 if('object' === typeof module){ module.exports=tDispatcher; }
 //test
 
-},{}],10:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var TemplateManager = (function() {
   "use strict";
 
@@ -469,7 +481,81 @@ function dirname(path) {
   return join(path, "..");
 }
 
-},{"fs":6}],11:[function(require,module,exports){
+},{"fs":10}],15:[function(require,module,exports){
+/**
+ * @author Tobias Nickel
+ * @description minimalistic emitter system
+ */
+
+/**
+ * gives an object the ability to handle emittions by defining 4 attributes
+ * ._events, .on, .off and .trigger
+ */
+tMitter = (function () {
+    /**
+     *    method that you will want to write in the documentation of your class/object.
+     *  together with all the events you trigger by yourself
+     *@param event {string} name of the event
+     *@param callback {function} the function to be called when the event is triggered
+     */
+    function on(event, callback) {
+        event = event.toLowerCase();
+        if (!(event in this._events))
+            this._events[event] = [];
+        if (this._events[event].indexOf(callback) === -1)
+            this._events[event].push(callback);
+    }
+    /**
+     *    method to remove an eventlistener or even all.
+     *@param event {string} name of the event where the call back should be removed
+     *@param callback {function} that will be removed from the listener
+     */
+    function off(event, callback) {
+        if (!event) {
+            this._events = {};
+            return;
+        }
+		
+        if (!callback) {
+            delete this._events[event];
+        } else {
+			var ev = this._events[event]
+            var index = ev.indexOf(callback);
+			if(index!==-1)
+				ev.splice(index,1);
+        }
+    }
+    /**
+     *  executing all listener that are registered on the event
+     *@param event {string} name of the event to be triggered
+     *@args args {mixed} anything that you want to be passed to the listeners callback
+     */
+    function trigger(event, args) {
+        if (!event)
+            return;
+        if (!this._events[event])
+            return;
+        var i = this._events[event].length;
+        var results = [];
+        while (i--) {
+            results.push(this._events[event][i](args));
+        }
+        return results;
+    };
+    return function tMitter(object) {
+        //container to store the listener/callbacks
+        object._events = {};
+        object.on = on;
+        object.off = off;
+        object.trigger = trigger;
+    };
+})();
+
+
+if('object' === typeof module){
+	module.exports = tMitter;
+}
+},{}],16:[function(require,module,exports){
 // loading tXML, an xmlParser by Tobias Nickel(https://github.com/TobiasNickel/tXml)
 function tXml(b){function k(){for(var f=[];b[a];){
     if(60==b.charCodeAt(a)){if(47===b.charCodeAt(a+1)){a=b.indexOf(">",a);break
@@ -742,7 +828,7 @@ var TreeAct = (function() {
 
 if(typeof module == 'object') module.exports = TreeAct;
 
-},{}],12:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2292,4 +2378,4 @@ if(typeof module == 'object') module.exports = TreeAct;
   }
 }.call(this));
 
-},{}]},{},[3]);
+},{}]},{},[4]);
