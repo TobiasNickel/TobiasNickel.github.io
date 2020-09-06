@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=640, initial-scale=1.0">
+    <title>Camera</title>
+<style>
+    *{margin:0; padding:0;}
+    canvas{
+        display: block;
+    }
+</style>
+</head>
+<body>
+    
+</body>
+<script>
+
+    var devices;
+    var videoElement = document.createElement('video');
+    var canvasSource= document.createElement('canvas');
+    canvasSource.width = window.innerWidth;
+    canvasSource.height = window.innerHeight;
+    var ctxSource = canvasSource.getContext('2d')
+    console.log(ctxSource);
+    const outputCanvas = document.createElement('canvas');
+    const outputCtx = outputCanvas.getContext('2d');
+    outputCanvas.width = window.innerWidth;
+    outputCanvas.height = window.innerHeight;
+
+    main().catch(err=>{
+        console.log(err)
+        alert(err.message)
+    });
+    async function main(){
+        devices = await navigator.mediaDevices.getUserMedia({video:{
+            width: window.innerWidth,
+            height: window.innerHeight,
+            facingMode: {
+               exact: 'environment'
+            }
+        }})
+        console.log(devices)
+        videoElement.setAttribute('autoplay', 'true');
+        videoElement.style.maxHeight = window.innerHeight;
+        videoElement.style.maxWidth = window.innerWidth;
+        videoElement.srcObject = devices;
+        
+        document.body.append(outputCanvas);
+        //document.body.append(videoElement);
+        setInterval(()=>{
+            ctxSource.drawImage(videoElement,0,0,window.innerWidth, window.innerHeight);
+            var sourceImageData = ctxSource.getImageData(0,0, window.innerWidth, window.innerHeight)
+            var outputImageData = ctxSource.getImageData(0,0, window.innerWidth, window.innerHeight)
+
+            for(var x=1; x<sourceImageData.width-1; x++){
+                for(var y=1; y<sourceImageData.height-1; y++){
+                    const p = (x + (y*sourceImageData.width))*4;
+                    var d = Math.abs(sourceImageData.data[p-4]-sourceImageData.data[p+4]);
+                    if(d>35){
+                        outputImageData.data[p+0]=0
+                        outputImageData.data[p+1]=255
+                        outputImageData.data[p+2]=255
+                    }
+                }
+            }
+
+            outputCtx.putImageData(outputImageData,0,0)
+        },100);
+
+    }
+</script>
+</html>
